@@ -3,11 +3,53 @@
 
 <head>
 <title>js fractal</title>
+<style>
+.main {
+	position: relative;
+}
+.overlay-icon {
+	position: absolute;
+	top: 0px;
+	left: 30px;
+	opacity: 0.9;
+	display: inline-block;
+	height: 22px;
+	padding: 2px;
+	color: white;
+	background-color: black;
+	user-select: none;
+	cursor: default;
+}
+#overlay-expanded {
+	position: absolute;
+	top: 0px;
+	left: 51px;
+	opacity: 0.9;
+	display: inline-block;
+	padding: 2px;
+	background-color: white;
+}
+</style>
 </head>
 
 <body>
-<canvas id="output" width="512" height="512"></canvas>
+<div class="main">
+<div class="overlay-icon">[-]</div>
+<div id="overlay-expanded">
+Fractal selection:
+<select id="fractal-select">
+<option value="mandelbrot">Mandelbrot</option>
+<option value="tricorn">Tricorn/Mandelbar</option>
+<option value="negate-cr">Negate cr</option>
+<option value="negate-cr-ci">Negate cr and ci</option>
+<option value="increment-zr">Increment zr</option>
+<option value="burning-ship">Burning ship</option>
+</select>
+<button id="reset-view" type="button">Reset view</button>
+</div>
+<canvas id="output" width="512" height="512">Needs canvas and JavaScript.</canvas>
 <script src="main.js"></script>
+</div>
 </body>
 
 </html>

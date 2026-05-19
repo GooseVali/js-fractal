@@ -58,7 +58,7 @@ var arrowRightHeld = false;
 var sliderValue = 30;
 var arrowUpHeld = false;
 var arrowDownHeld = false;
-var sliderValue2 = 11;
+var sliderValue2 = 640;
 
 const canvas = document.getElementById("output");
 const WIDTH = Math.floor((window.innerWidth - 40) / 4) * 4; // needs to be divisible by 4
@@ -71,6 +71,10 @@ var PIXEL_INCREMENT = VIEW_SIZE / HEIGHT;
 const ctx = canvas.getContext("2d");
 ctx.font = "16px Arial";
 const imagePart = ctx.createImageData(WIDTH, PART_HEIGHT);
+
+const overlay = document.getElementById("overlay-expanded");
+overlay.style.display = "none";
+var overlayShowing = false;
 
 function mandelbrot(cr, ci) {
 	var zr = 0;
@@ -91,11 +95,126 @@ function mandelbrot(cr, ci) {
 			zr2 = zr * zr;
 			zi2 = zi * zi;
 			magnitude = zr2 + zi2;
+			
+			//cr *= -1;
+			//ci *= -1;
+			
+			//zr += 0.01 * i;
+			
+			//zr += 0.0001 * sliderValue2 * i;
 		} else break;
 	}
 
 	return i == ITERATION_LIMIT ? 0 : i;
 }
+
+function tricorn(cr, ci) {
+	var zr = 0; var zi = 0;
+	var zr2 = 0; var zi2 = 0; // squared
+	var magnitude = 0; var i;
+
+	for (i = 0; i < ITERATION_LIMIT; i++) {
+		if (magnitude < MAGNITUDE_LIMIT) {
+			ci *= -1;
+			
+			zi = zr * zi;
+			zi += zi + ci;
+			zr = zr2 - zi2 + cr;
+			zr2 = zr * zr;
+			zi2 = zi * zi;
+			magnitude = zr2 + zi2;
+		} else break;
+	}
+
+	return i == ITERATION_LIMIT ? 0 : i;
+}
+
+function negate_cr(cr, ci) {
+	var zr = 0; var zi = 0;
+	var zr2 = 0; var zi2 = 0; // squared
+	var magnitude = 0; var i;
+
+	for (i = 0; i < ITERATION_LIMIT; i++) {
+		if (magnitude < MAGNITUDE_LIMIT) {
+			cr *= -1;
+			
+			zi = zr * zi;
+			zi += zi + ci;
+			zr = zr2 - zi2 + cr;
+			zr2 = zr * zr;
+			zi2 = zi * zi;
+			magnitude = zr2 + zi2;
+		} else break;
+	}
+
+	return i == ITERATION_LIMIT ? 0 : i;
+}
+
+function negate_cr_ci(cr, ci) {
+	var zr = 0; var zi = 0;
+	var zr2 = 0; var zi2 = 0; // squared
+	var magnitude = 0; var i;
+
+	for (i = 0; i < ITERATION_LIMIT; i++) {
+		if (magnitude < MAGNITUDE_LIMIT) {
+			cr *= -1;
+			ci *= -1;
+			
+			zi = zr * zi;
+			zi += zi + ci;
+			zr = zr2 - zi2 + cr;
+			zr2 = zr * zr;
+			zi2 = zi * zi;
+			magnitude = zr2 + zi2;
+		} else break;
+	}
+
+	return i == ITERATION_LIMIT ? 0 : i;
+}
+
+function increment_zr(cr, ci) {
+	var zr = 0; var zi = 0;
+	var zr2 = 0; var zi2 = 0; // squared
+	var magnitude = 0; var i;
+
+	for (i = 0; i < ITERATION_LIMIT; i++) {
+		if (magnitude < MAGNITUDE_LIMIT) {
+			zr += 0.01 * i;
+			
+			zi = zr * zi;
+			zi += zi + ci;
+			zr = zr2 - zi2 + cr;
+			zr2 = zr * zr;
+			zi2 = zi * zi;
+			magnitude = zr2 + zi2;
+		} else break;
+	}
+
+	return i == ITERATION_LIMIT ? 0 : i;
+}
+
+function burningship(cr, ci) {
+	var zr = 0; var zi = 0;
+	var zr2 = 0; var zi2 = 0; // squared
+	var magnitude = 0; var i;
+
+	for (i = 0; i < ITERATION_LIMIT; i++) {
+		if (magnitude < MAGNITUDE_LIMIT) {
+			zi = zr * zi;
+			zi += zi + ci;
+			zr = zr2 - zi2 + cr;
+			zr = Math.abs(zr);
+			zi = Math.abs(zi);
+			zr2 = zr * zr;
+			zi2 = zi * zi;
+			magnitude = zr2 + zi2;
+		} else break;
+	}
+
+	return i == ITERATION_LIMIT ? 0 : i;
+}
+
+var currentFunction = mandelbrot;
 
 function finalBox(x, y, cr_box, ci_box, size) {
 	var arrayPos = x + 1 + (y + 1) * BOX_SIZE;
@@ -104,7 +223,7 @@ function finalBox(x, y, cr_box, ci_box, size) {
 	for (let j = 1; j < size - 1; j++) {
 		var cr = cr_box + PIXEL_INCREMENT;
 		for (let i = 1; i < size - 1; i++) {
-			workArray[arrayPos++] = mandelbrot(cr, ci);
+			workArray[arrayPos++] = currentFunction(cr, ci);
 			cr += PIXEL_INCREMENT;
 		}
 		arrayPos += BOX_SIZE - (size - 2);
@@ -133,14 +252,14 @@ function drawBox(x, y, cr_box, ci_box, size, topDone, leftDone, rightDone, botto
 		if (leftDone) {
 			compareValue = workArray[arrayPos++];
 		} else {
-			const result = mandelbrot(cr, ci);
+			const result = currentFunction(cr, ci);
 			compareValue = result;
 			workArray[arrayPos++] = result;
 		}
 		cr += PIXEL_INCREMENT;
 		
 		for (let i = 1; i < rightEdge; i++) {
-			const result = mandelbrot(cr, ci);
+			const result = currentFunction(cr, ci);
 			workArray[arrayPos++] = result;
 			if (result != compareValue) foundChange = true;
 			
@@ -166,7 +285,7 @@ function drawBox(x, y, cr_box, ci_box, size, topDone, leftDone, rightDone, botto
 		cr = cr_box;
 		ci = ci_box - PIXEL_INCREMENT;
 		for (let i = 1; i < size - 1; i++) {
-			const result = mandelbrot(cr, ci);
+			const result = currentFunction(cr, ci);
 			workArray[arrayPos] = result;
 			if (result != compareValue) foundChange = true;
 			
@@ -190,7 +309,7 @@ function drawBox(x, y, cr_box, ci_box, size, topDone, leftDone, rightDone, botto
 		cr = cr_box + (size - 1) * PIXEL_INCREMENT;
 		ci = ci_box - PIXEL_INCREMENT;
 		for (let i = 1; i < size - 1; i++) {
-			const result = mandelbrot(cr, ci);
+			const result = currentFunction(cr, ci);
 			workArray[arrayPos] = result;
 			if (result != compareValue) foundChange = true;
 			
@@ -221,7 +340,7 @@ function drawBox(x, y, cr_box, ci_box, size, topDone, leftDone, rightDone, botto
 		}
 		
 		for (let i = leftEdge; i < rightEdge; i++) {
-			const result = mandelbrot(cr, ci);
+			const result = currentFunction(cr, ci);
 			workArray[arrayPos++] = result;
 			if (result != compareValue) foundChange = true;
 			
@@ -328,7 +447,7 @@ function drawSlice() {
 	for (let y = 0; y < PART_HEIGHT; y++) {
 		var cr = CR_MIN; // real part, from pixel x-coordinate
 		for (let x = 0; x < WIDTH; x++) {
-			var result = mandelbrot(cr, ci);
+			var result = currentFunction(cr, ci);
 			if (result > 0) {
 				//result += Math.random() - 0.5;
 				//result = Math.floor(result * 12) + 22;
@@ -404,6 +523,51 @@ function draw() {
 	ctx.fillText(Math.floor(lastTimeSum).toString(), 2, 36);
 }
 
+const fractalSelect = document.getElementById("fractal-select");
+fractalSelect.value = "mandelbrot";
+
+function switchFractal() {
+	if (fractalSelect.value == "mandelbrot") {
+		currentFunction = mandelbrot;
+		CR_MIN = -2.1;
+		CI_MAX = 1.4;
+		VIEW_SIZE = 2.8;
+	} else if (fractalSelect.value == "tricorn") {
+		currentFunction = tricorn;
+		CR_MIN = -2.1;
+		CI_MAX = 2;
+		VIEW_SIZE = 4;
+	} else if (fractalSelect.value == "negate-cr") {
+		currentFunction = negate_cr;
+		CR_MIN = -2.1;
+		CI_MAX = 1.4;
+		VIEW_SIZE = 2.8;
+	} else if (fractalSelect.value == "negate-cr-ci") {
+		currentFunction = negate_cr_ci;
+		CR_MIN = -2.1;
+		CI_MAX = 1.4;
+		VIEW_SIZE = 2.8;
+	} else if (fractalSelect.value == "increment-zr") {
+		currentFunction = increment_zr;
+		CR_MIN = -2.1;
+		CI_MAX = 1.4;
+		VIEW_SIZE = 2.8;
+	} else if (fractalSelect.value == "burning-ship") {
+		currentFunction = burningship;
+		CR_MIN = -2.1;
+		CI_MAX = 1.0;
+		VIEW_SIZE = 2.8;
+	}
+	
+	if (!frameRequested) {
+		requestAnimationFrame(draw);
+		frameRequested = true;
+	}
+}
+
+fractalSelect.addEventListener("change", switchFractal);
+document.getElementById("reset-view").addEventListener("click", switchFractal);
+
 function zoomStart(e) {
 	if (e.button === 0) {
 		mouseDown = true;
@@ -424,6 +588,18 @@ function zoomStop(e) {
 function mouseMove(e) {
 	mouseX = e.offsetX / HEIGHT;
 	mouseY = e.offsetY / HEIGHT;
+	
+	if (e.offsetX < 400 && e.offsetY < 50) {
+		if (!overlayShowing) {
+			overlay.style.display = "inline-block";
+			overlayShowing = true;
+		}
+	} else {
+		if (overlayShowing) {
+			overlay.style.display = "none";
+			overlayShowing = false;
+		}
+	}
 }
 
 canvas.addEventListener("mousedown", zoomStart);
