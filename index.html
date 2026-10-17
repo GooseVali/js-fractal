@@ -4,6 +4,9 @@
 <head>
 <title>js fractal</title>
 <style>
+body {
+	background-color: #404040;
+}
 .main {
 	position: relative;
 }
@@ -45,9 +48,22 @@ Fractal selection:
 <option value="increment-zr">Increment zr</option>
 <option value="burning-ship">Burning ship</option>
 </select>
+Iteration limit:
+<select id="iteration-limit-select">
+<option value="L2048">2048</option>
+<option value="L1024">1024</option>
+<option value="L256">256</option>
+<option value="L128">128</option>
+<option value="L80">80</option>
+</select>
 <button id="reset-view" type="button">Reset view</button>
+Tool selection:
+<button id="zoom-in" type="button">Zoom in</button>
+<button id="zoom-out" type="button">Zoom out</button>
+<button id="pan-view" type="button">Pan view</button>
 </div>
 <canvas id="output" width="512" height="512">Needs canvas and JavaScript.</canvas>
+<script src="calculations.js"></script>
 <script src="main.js"></script>
 </div>
 </body>
